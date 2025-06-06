@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  nginx:
+    container_name: itube_qa_server
+    restart: unless-stopped
+    ports: 
+      - "80:80"
+      - "443:443"
+    image: "openresty:latest"
+    volumes:
+      - /opt/nginx/conf.d/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - /opt/nginx/ssl:/etc/nginx/ssl
+      - /opt/nginx/modules:/etc/nginx/modules
+      - /opt/nginx/includes:/etc/nginx/includes
+      - /opt/nginx/conf.d/nginx_server.conf:/etc/nginx/conf.d/nginx_server.conf
+      - /opt/nginx/log:/var/log/nginx
+    # logging:
+    #   driver: "gelf"
+    #   options:
+    #     gelf-address: "udp://10.62.172.136:12201"
+    #     tag: "dev_nginx_server"

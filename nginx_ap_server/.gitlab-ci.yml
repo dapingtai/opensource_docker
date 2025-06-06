@@ -1,0 +1,24 @@
+stages:
+  # - build
+  - deploy
+
+default:
+  before_script:
+    - echo "Start ITUBE_QA_SERVER CI/CD"
+  after_script:
+    - echo "Finish ITUBE_QA_SERVER CI/CD"
+
+dev-deploy:
+  stage: deploy
+  only:
+    - /^DEV-.*$/
+  except:
+    - branches
+  script:
+    - echo ${DEV_PEM}
+    - chmod 600 ${DEV_PEM}
+    - ssh -i ${DEV_PEM} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_IP} -- "sudo mkdir -p /opt/nginx"
+    - ssh -i ${DEV_PEM} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_IP} -- "sudo rm -rf /opt/nginx/.git"
+    - scp -i ${DEV_PEM} -o StrictHostKeyChecking=no -r ./* ${DEV_USER}@${DEV_IP}:/opt/nginx
+    - ssh -i ${DEV_PEM} -o StrictHostKeyChecking=no  ${DEV_USER}@${DEV_IP} -- "cd /opt/nginx/;docker compose down"
+    - ssh -i ${DEV_PEM} -o StrictHostKeyChecking=no  ${DEV_USER}@${DEV_IP} -- "cd /opt/nginx/;export CI_COMMIT_TAG=${CI_COMMIT_TAG};docker compose pull;docker compose up -d"

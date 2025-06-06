@@ -1,0 +1,52 @@
+version: '3.8'
+
+networks:
+  odoo-ap-network:
+    driver: bridge
+
+services:
+  web_ap1:
+    container_name: odoo18_ap1
+    image: odoo:18
+    user: root
+    ports:
+      - "8069:8069"
+      - "8072:8072" # live chat
+    tty: true
+    command: --
+    environment:
+      - USER=your-user
+      - PASSWORD=your-pwd
+    volumes:
+      #- /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      # - ./entrypoint.sh:/entrypoint.sh   # if you want to install additional Python packages, uncomment this line!
+      # - odoo-web-data:/var/lib/odoo
+      - ./addons:/mnt/extra-addons
+      - ./etc:/etc/odoo
+    restart: always
+    networks: 
+      - odoo-ap-network
+
+  web_ap2:
+    container_name: odoo18_ap2
+    image: odoo:18
+    user: root
+    ports:
+      - "8070:8069"
+      - "8073:8072" # live chat
+    tty: true
+    command: --
+    environment:
+      - USER=your-user
+      - PASSWORD=your-pwd
+    volumes:
+      #- /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      # - ./entrypoint.sh:/entrypoint.sh   # if you want to install additional Python packages, uncomment this line!
+      # - odoo-web-data:/var/lib/odoo
+      - ./addons:/mnt/extra-addons
+      - ./etc:/etc/odoo
+    restart: always
+    networks:
+      - odoo-ap-network

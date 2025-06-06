@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  odoo18:
+    container_name: odoo_ap
+    image: odoo:18
+    user: root
+    depends_on:
+      - db
+    ports:
+      - "10018:8069"
+      - "20018:8072" # live chat
+    tty: true
+    command: --
+    environment:
+      - HOST=db
+      - USER=odoo
+      - PASSWORD=odoo18@2024
+    volumes:
+      #- /etc/timezone:/etc/timezone:ro
+      #- /etc/localtime:/etc/localtime:ro
+      # - ./entrypoint.sh:/entrypoint.sh   # if you want to install additional Python packages, uncomment this line!
+      # - odoo-web-data:/var/lib/odoo
+      - ./addons:/mnt/extra-addons
+      - ./etc:/etc/odoo
+    restart: always
+
+  db:
+    container_name: odoo_db
+    image: postgres:17
+    user: root
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo18@2024
+      - POSTGRES_DB=postgres
+    restart: always             # run as a service
+    volumes:
+      - ./postgresql:/var/lib/postgresql/data
+
+  pgadmin4:
+    container_name: odoo_pgadmin4
+    image: dpage/pgadmin4
+    restart: "always"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "your-mail@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "your-pwd"
+      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 365
+      PGADMIN_CONFIG_MAX_SESSION_IDLE_TIME: 60
+    volumes:
+      - pgadmin4-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+  pgadmin4-data:
+
+networks:
+  odoo_network:
+    driver: bridge

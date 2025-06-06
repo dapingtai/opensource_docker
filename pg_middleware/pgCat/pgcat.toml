@@ -1,0 +1,73 @@
+[general]
+
+
+host = "0.0.0.0" # this is custom network for docker or "172.19.0.1" ip pgcat instaled in the host
+
+port = 6431 # custom port for client login
+
+worker_threads = 10
+
+autoreload = 15000
+
+server_tls = false
+
+verify_server_certificate = false
+
+#statement_timeout = 0
+
+idle_client_in_transaction_timeout = 0 # milliseconds
+
+# How long to wait before aborting a server connection (ms).
+
+connect_timeout = 5000 # milliseconds
+
+# How long an idle connection with a server is left open (ms).
+
+idle_timeout = 30000 # milliseconds
+
+# Admin like postgres
+
+admin_username = "repmgr"   # or other user with superuser role
+
+admin_password = "your-pwd"
+
+
+[pools.odoo.users.1] # [pools.database.users.(user_index)] this case is user 1
+
+username = "repmgr"
+password = "your-pwd"
+pool_size = 100
+pool_mode = "transaction"
+
+[pools.odoo.shards.0] # [pools.database.shards.(shard_id)] this case I use 0 for my localhost
+servers = [
+    ["127.0.0.1", 5432, "primary"]
+]
+database = "odoo_demo"
+
+[pools.database1.users.1] # user 1
+
+username = "repmgr"
+password = "your-pwd"
+pool_size = 100
+pool_mode = "transaction"
+
+[pools.database1.shards.0]
+
+servers = [
+    ["127.0.0.1", 5432, "primary"]
+]
+database = "odoo_demo"
+
+[pools.database2.users.2] # for user 2
+
+username = "repmgr"
+password = "your-pwd"
+pool_size = 100
+pool_mode = "transaction"
+
+[pools.database2.shards.0] # id for localhost
+servers = [
+    ["127.0.0.1", 5432, "primary"]
+]
+database = "odoo_demo"

@@ -1,0 +1,20 @@
+stages:
+  - deploy
+
+dev-deploy:
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^DEV-.*$/'
+      when: on_success
+    - when: never
+  before_script:
+    - chmod 600 ${DEV_PEM}
+    - echo "IP:${DEV_IP} | PEM:${DEV_PEM}"
+  script:
+    - echo "Start deploy gateway service $CI_COMMIT_TAG to dev"
+    - echo "CI_COMMIT_TAG=${CI_COMMIT_TAG}" > .env
+    - echo "MODE=sit" >> .env
+    - ssh -i ${DEV_PEM} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_IP} -- "sudo mkdir -p /home/ubuntu/gateway_service"
+    - scp -i ${DEV_PEM} .env ${DEV_USER}@${DEV_IP}:/home/ubuntu/gateway_service
+    - scp -i ${DEV_PEM} docker-compose.yml ${DEV_USER}@${DEV_IP}:/home/ubuntu/gateway_service
+    - ssh -i ${DEV_PEM} -o StrictHostKeyChecking=no ${DEV_USER}@${DEV_IP} -- "docker login your-harbor-domain.com --username ${HARBOR_ACCOUNT} --password ${HARBOR_PWD} && cd /home/ubuntu/gateway_service && docker compose down && export CI_COMMIT_TAG=${CI_COMMIT_TAG} && docker compose pull && docker compose up --no-build -d"

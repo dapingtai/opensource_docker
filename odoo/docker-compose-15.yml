@@ -1,0 +1,60 @@
+version: "3.5"
+
+services:
+  web:
+    image: odoo:15.0
+    depends_on:
+      - db
+    ports:
+      - "8069:8069"
+    restart: "always"
+    healthcheck:
+      test: curl -fs http://localhost:8069/web/database/selector || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - odoo-web-data:/var/lib/odoo
+      - ./config:/etc/odoo
+      - ./addons:/mnt/extra-addons
+      # - ./odoo-log-data:/var/log/odoo
+    # command:
+    #   odoo -r odoo -w odoo -i addons -d odoo
+  db:
+    image: postgres:13
+    ports:
+      - "5432:5432"
+    restart: "always"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=odoo
+      - POSTGRES_PASSWORD=odoo
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U odoo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - odoo-db-data:/var/lib/postgresql/data/pgdata
+
+  pgadmin4:
+    container_name: odoo_pgadmin4
+    image: dpage/pgadmin4
+    restart: "always"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "your-mail@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "your-pwd"
+      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 365
+      PGADMIN_CONFIG_MAX_SESSION_IDLE_TIME: 60
+    volumes:
+      - pgadmin4-data:/var/lib/pgadmin
+    ports:
+      - "5050:80"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  odoo-web-data:
+  odoo-db-data:
+  pgadmin4-data:

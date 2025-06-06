@@ -1,0 +1,11 @@
+services:
+  web:
+    container_name: matomo-service
+    image: matomo:latest
+    restart: unless-stopped
+    ports:
+      - "8082:80"
+    volumes:
+      - /opt/matomo/.htaccess:/var/www/html/.htaccess
+      - /opt/matomo/config/config.ini.php:/var/www/html/config/config.ini.php
+    command: ["sh", "-c", "if [ ! -f /var/run/apache2/.first_start ]; then a2enmod rewrite && service apache2 restart && touch /var/run/apache2/.first_start; fi && apache2-foreground"]

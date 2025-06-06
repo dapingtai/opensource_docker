@@ -1,0 +1,87 @@
+version: '1.0'
+
+networks:
+  odoo-db-network:
+    driver: bridge
+
+services:
+  pg-0:
+    container_name: odoo_db1
+    image: bitnami/postgresql-repmgr:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=your-pwd
+      - POSTGRESQL_USERNAME=odoo
+      - POSTGRESQL_PASSWORD=your-pwd
+      - REPMGR_USERNAME=repmgr
+      - REPMGR_PASSWORD=your-pwd
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-0
+      - REPMGR_NODE_NETWORK_NAME=pg-0
+    volumes:
+      - pg_0_data:/bitnami/postgresql
+    networks: 
+      - odoo-db-network
+
+  pg-1:
+    container_name: odoo_db2
+    image: bitnami/postgresql-repmgr:latest
+    ports:
+      - 5433:5432
+    environment: 
+      - POSTGRESQL_POSTGRES_PASSWORD=your-pwd
+      - POSTGRESQL_USERNAME=odoo
+      - POSTGRESQL_PASSWORD=your-pwd
+      - REPMGR_USERNAME=repmgr
+      - REPMGR_PASSWORD=your-pwd
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-1
+      - REPMGR_NODE_NETWORK_NAME=pg-1
+    volumes:
+      - pg_1_data:/bitnami/postgresql
+    networks: 
+      - odoo-db-network
+    
+  pgbouncer:
+    container_name: odoo_pgbouncer
+    image: bitnami/pgbouncer:latest
+    ports:
+      - 6432:6432
+    environment:
+      - POSTGRESQL_HOST=pg-0
+      - POSTGRESQL_USERNAME=repmgr
+      - POSTGRESQL_PASSWORD=your-pwd
+      - POSTGRESQL_DATABASE=odoo_demo
+      - PGBOUNCER_AUTH_TYPE=trust
+      - PGBOUNCER_USERLIST_FILE=/bitnami/userlists.txt
+      - PGBOUNCER_DSN_0=pg0=host=pg-0 port=5432 dbname=odoo_demo
+      - PGBOUNCER_DSN_1=pg1=host=pg-1 port=5433 dbname=odoo_demo
+    volumes:
+      - './userlists.txt:/bitnami/userlists.txt'
+    networks: 
+      - odoo-db-network
+
+  pgadmin:
+    container_name: odoo_pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "your-mail@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "your-pwd"
+      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 365
+      PGADMIN_CONFIG_MAX_SESSION_IDLE_TIME: 60
+    ports:
+      - 5050:80
+    volumes:
+      - pgadmin4-data:/var/lib/pgadmin
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: 
+      - odoo-db-network
+
+volumes:
+  pg_0_data:
+  pg_1_data:
+  pgadmin4-data:

@@ -1,0 +1,68 @@
+version: '1.0'
+
+networks:
+  odoo-db-network:
+    driver: bridge
+
+services:
+  pg-0:
+    container_name: odoo_db1
+    image: bitnami/postgresql-repmgr:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_POSTGRES_PASSWORD=your-pwd
+      - POSTGRESQL_USERNAME=odoo
+      - POSTGRESQL_PASSWORD=your-pwd
+      - REPMGR_USERNAME=repmgr
+      - REPMGR_PASSWORD=your-pwd
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-0
+      - REPMGR_NODE_NETWORK_NAME=pg-0
+    volumes:
+      - pg_0_data:/bitnami/postgresql
+    networks: 
+      - odoo-db-network
+
+  pg-1:
+    container_name: odoo_db2
+    image: bitnami/postgresql-repmgr:latest
+    ports:
+      - 5433:5432
+    environment: 
+      - POSTGRESQL_POSTGRES_PASSWORD=your-pwd
+      - POSTGRESQL_USERNAME=odoo
+      - POSTGRESQL_PASSWORD=your-pwd
+      - REPMGR_USERNAME=repmgr
+      - REPMGR_PASSWORD=your-pwd
+      - REPMGR_PRIMARY_HOST=pg-0
+      - REPMGR_PARTNER_NODES=pg-0,pg-1
+      - REPMGR_NODE_NAME=pg-1
+      - REPMGR_NODE_NETWORK_NAME=pg-1
+    volumes:
+      - pg_1_data:/bitnami/postgresql
+    networks: 
+      - odoo-db-network
+
+  pgadmin:
+    container_name: odoo_pgadmin
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "your-mail@gmail.com"
+      PGADMIN_DEFAULT_PASSWORD: "your-pwd"
+      PGADMIN_CONFIG_SESSION_EXPIRATION_TIME: 365
+      PGADMIN_CONFIG_MAX_SESSION_IDLE_TIME: 60
+    ports:
+      - 5050:80
+    volumes:
+      - pgadmin4-data:/var/lib/pgadmin
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: 
+      - odoo-db-network
+
+volumes:
+  pg_0_data:
+  pg_1_data:
+  pgadmin4-data:
