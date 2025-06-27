@@ -1,0 +1,9 @@
+version: "3.8"
+
+services:
+  nginx:
+    container_name: frontend_runner
+    build:
+      context: .
+    restart: unless-stopped
+    image: "harbor01.ces.myfiinet.com/frontend_env/frontend-runner:latest"
